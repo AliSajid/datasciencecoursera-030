@@ -21,3 +21,7 @@ columnmean <- function(y, removeNA = TRUE) {
   }
   means
 }
+
+cube <- function(x, n) {
+  x ^ 3
+}
