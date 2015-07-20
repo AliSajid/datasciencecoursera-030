@@ -1,27 +1,24 @@
 best <- function(state, outcome) {
+  full_data <- read.csv("outcome-of-care-measures.csv", colClasses="character")
   
-  ## Load the outcomes data from the file.
-  outcome.data <- read.csv("outcome-of-care-measures.csv")
-  
-  ## List of valid outcomes.
-  
-  outcomes.list <- c(11, 17, 23)
-  names(outcomes.list) <- c("heart attack", "heart failure", "pneumonia")
-  
-  ## Checking to see if the state is valid.
-  if(!(state %in% outcome.data$State)) {
-    stop("invalid state")
-  }
-  
-  ## Checking to see if the outcome is valid.
-  if(!(outcome %in% names(outcomes.list))) {
+  column <- if (outcome == "heart attack") {
+    "Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack"
+  } else if (outcome == "heart failure") {
+    "Hospital.30.Day.Death..Mortality..Rates.from.Heart.Failure"
+  } else if (outcome == "pneumonia") {
+    "Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia"
+  } else {
     stop("invalid outcome")
   }
   
-  ## Return hospital name in that state with lowest 30-day death
-  ## rate
-  state.subset <- subset(outcome.data, outcome.data["State"] == state)
-  index <- apply(state.subset,2,which.min)[[outcomes.list[outcome]]]
-  name <- as.character(state.subset[index,2])
-  name
+  data_for_state <- full_data[full_data$State == state, c("Hospital.Name", column)]
+  
+  if (nrow(data_for_state) == 0) {
+    stop("invalid state")	
+  }
+  
+  data_for_state[,2] <- as.numeric(data_for_state[,2])	
+  ordered_data_for_state <- order(data_for_state[column], data_for_state$Hospital.Name)
+  
+  as.character(data_for_state$Hospital.Name[ordered_data_for_state[1]])
 }
